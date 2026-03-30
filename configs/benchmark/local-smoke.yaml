@@ -1,0 +1,31 @@
+experiment_groups:
+  - name: smoke-sdpa-fp16
+    device: mps
+    quantization: fp16
+    attn_implementation: sdpa
+    models:
+      - model_id: Qwen/Qwen3.5-0.8B
+        friendly_name: qwen3.5-0.8b
+
+length_groups:
+  - name: short
+    prompt_tokens: 64
+    output_tokens: 8
+    num_samples: 5
+    tolerance: 16
+
+  - name: medium
+    prompt_tokens: 128
+    output_tokens: 32
+    num_samples: 5
+    tolerance: 24
+
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  do_sample: false
+  seed: 42
+
+paths:
+  output_dir: artifacts/runs
+  data_cache_dir: artifacts/data

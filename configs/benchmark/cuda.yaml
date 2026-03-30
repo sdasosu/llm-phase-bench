@@ -1,0 +1,65 @@
+experiment_groups:
+  - name: cuda-sdpa-fp16
+    device: cuda
+    quantization: fp16
+    attn_implementation: sdpa
+    models:
+      - model_id: Qwen/Qwen3.5-0.8B
+        friendly_name: qwen3.5-0.8b
+      - model_id: google/gemma-3-1b-it
+        friendly_name: gemma-3-1b
+      - model_id: meta-llama/Llama-3.2-1B-Instruct
+        friendly_name: llama-3.2-1b
+
+  - name: cuda-sdpa-int4
+    device: cuda
+    quantization: int4
+    attn_implementation: sdpa
+    models:
+      - model_id: Qwen/Qwen3.5-0.8B
+        friendly_name: qwen3.5-0.8b
+      - model_id: google/gemma-3-1b-it
+        friendly_name: gemma-3-1b
+      - model_id: meta-llama/Llama-3.2-1B-Instruct
+        friendly_name: llama-3.2-1b
+
+  - name: cuda-fa2-int4
+    device: cuda
+    quantization: int4
+    attn_implementation: flash_attention_2
+    models:
+      - model_id: Qwen/Qwen3.5-0.8B
+        friendly_name: qwen3.5-0.8b
+      - model_id: google/gemma-3-1b-it
+        friendly_name: gemma-3-1b
+      - model_id: meta-llama/Llama-3.2-1B-Instruct
+        friendly_name: llama-3.2-1b
+
+length_groups:
+  - name: short
+    prompt_tokens: 64
+    output_tokens: 8
+    num_samples: 200
+    tolerance: 16
+
+  - name: medium
+    prompt_tokens: 128
+    output_tokens: 32
+    num_samples: 200
+    tolerance: 24
+
+  - name: long
+    prompt_tokens: 256
+    output_tokens: 64
+    num_samples: 200
+    tolerance: 48
+
+generation:
+  temperature: 0.0
+  top_p: 1.0
+  do_sample: false
+  seed: 42
+
+paths:
+  output_dir: artifacts/runs
+  data_cache_dir: artifacts/data
