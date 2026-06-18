@@ -253,3 +253,7 @@ __marimo__/
 # Built Visual Studio Code Extensions
 *.vsix
 paper/
+
+# Benchmark result data and generated figures
+artifacts/
+figures/

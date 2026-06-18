@@ -10,7 +10,7 @@ from llm_phase_bench.utils.jsonl import load_jsonl_raw
 if TYPE_CHECKING:
     from pathlib import Path
 
-    import matplotlib.pyplot as plt  # ty: ignore[unresolved-import]
+    import matplotlib.pyplot as plt
     import pandas as pd
 
 MODEL_LABELS = {
@@ -91,15 +91,15 @@ def plot_tpot_delta(summary: pd.DataFrame) -> plt.Figure:
     Returns:
         Matplotlib Figure with 3 subplots (one per model).
     """
-    import matplotlib.pyplot as plt  # ty: ignore[unresolved-import]
+    import matplotlib.pyplot as plt
     import pandas as pd
-    import seaborn as sns  # ty: ignore[unresolved-import]
+    import seaborn as sns
 
     records: list[dict] = []
     for model in MODEL_LABELS:
         for length in LENGTH_ORDER:
             for plat, base_cfg, accel_cfg, label in (
-                ("gpu", "SDPA+FP16", "SDPA+INT4", "GPU: INT4"),
+                ("gpu", "SDPA+FP16", "SDPA+INT4", "GPU: NF4"),
                 ("rpi", "F16", "Q4KM", "RPi: Q4_K_M"),
             ):
                 mask = (
@@ -126,7 +126,13 @@ def plot_tpot_delta(summary: pd.DataFrame) -> plt.Figure:
     delta_df = pd.DataFrame(records)
     models = list(MODEL_LABELS.keys())
 
-    fig, axes = plt.subplots(1, 3, figsize=(10, 3.2), sharey=True)
+    fig, axes = plt.subplots(
+        1,
+        3,
+        figsize=(7.0, 2.6),
+        constrained_layout={"h_pad": 0.035},
+        sharey=True,
+    )
     for idx, model in enumerate(models):
         ax = axes[idx]
         data = delta_df[delta_df["model"] == model]
@@ -146,13 +152,21 @@ def plot_tpot_delta(summary: pd.DataFrame) -> plt.Figure:
             ax.set_ylabel("TPOT Change (%)")
         else:
             ax.set_ylabel("")
-        ax.set_ylim(-75, 70)
-        if idx == 2:
-            ax.legend(fontsize=7, loc="upper right")
-        else:
+        ax.set_ylim(-72, 60)
+        ax.set_box_aspect(0.75)
+        if ax.get_legend() is not None:
             ax.get_legend().remove()
 
-    fig.tight_layout()
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(
+        handles,
+        labels,
+        loc="outside lower center",
+        ncol=2,
+        fontsize=8,
+        frameon=False,
+        borderpad=0.0,
+    )
     return fig
 
 
@@ -165,22 +179,28 @@ def plot_ttft_scaling(summary: pd.DataFrame) -> plt.Figure:
     Returns:
         Matplotlib Figure with 3 subplots (one per model).
     """
-    import matplotlib.pyplot as plt  # ty: ignore[unresolved-import]
+    import matplotlib.pyplot as plt
 
     configs = [
-        ("gpu", "SDPA+FP16", "GPU: FP16"),
-        ("gpu", "SDPA+INT4", "GPU: INT4"),
-        ("cpu", "SDPA+FP16", "CPU: FP16"),
-        ("rpi", "F16", "RPi: FP16"),
-        ("rpi", "Q4KM", "RPi: Q4_K_M"),
+        ("gpu", "SDPA+FP16", "GPU: FP16", "#1f77b4", "o", "-"),
+        ("gpu", "SDPA+INT4", "GPU: NF4", "#ff7f0e", "s", "--"),
+        ("cpu", "SDPA+FP16", "CPU: FP16", "#2ca02c", "^", "-"),
+        ("rpi", "F16", "RPi: FP16", "#d62728", "D", "-"),
+        ("rpi", "Q4KM", "RPi: Q4_K_M", "#9467bd", "v", "--"),
     ]
 
-    fig, axes = plt.subplots(1, 3, figsize=(10, 3.2), sharey=False)
+    fig, axes = plt.subplots(
+        1,
+        3,
+        figsize=(7.0, 2.6),
+        constrained_layout={"h_pad": 0.0},
+        sharey=False,
+    )
     models = list(MODEL_LABELS.keys())
 
     for idx, model in enumerate(models):
         ax = axes[idx]
-        for platform, config, label in configs:
+        for platform, config, label, color, marker, linestyle in configs:
             data = summary[
                 (summary["platform"] == platform)
                 & (summary["model"] == model)
@@ -192,7 +212,18 @@ def plot_ttft_scaling(summary: pd.DataFrame) -> plt.Figure:
             if len(data):
                 x = [LENGTH_TOKENS[v] for v in data["length"]]
                 y = data["ttft_median"].to_numpy()
-                ax.plot(x, y, marker="o", label=label, linewidth=1.5, markersize=5)
+                ax.plot(
+                    x,
+                    y,
+                    color=color,
+                    marker=marker,
+                    linestyle=linestyle,
+                    label=label,
+                    linewidth=1.3,
+                    markersize=4,
+                    markerfacecolor="white",
+                    markeredgewidth=1.0,
+                )
 
         ax.set_title(MODEL_LABELS[model].replace("\n", " "))
         ax.set_xlabel("Prompt Tokens")
@@ -200,10 +231,25 @@ def plot_ttft_scaling(summary: pd.DataFrame) -> plt.Figure:
             ax.set_ylabel("TTFT (ms)")
         ax.set_yscale("log")
         ax.set_xticks([64, 128, 256])
-        if idx == 2:
-            ax.legend(fontsize=7, loc="center right")
+        ax.set_box_aspect(0.75)
 
-    fig.tight_layout()
+    handles, labels = [], []
+    seen = set()
+    for ax in axes:
+        for handle, lbl in zip(*ax.get_legend_handles_labels(), strict=True):
+            if lbl not in seen:
+                seen.add(lbl)
+                handles.append(handle)
+                labels.append(lbl)
+    fig.legend(
+        handles,
+        labels,
+        loc="outside lower center",
+        ncol=len(labels),
+        fontsize=8,
+        frameon=False,
+        borderpad=0.0,
+    )
     return fig
 
 
@@ -221,11 +267,11 @@ def generate_figures(
         rpi_dir: Directory with RPi benchmark JSONL files.
         output_dir: Directory to write PDF/PNG figures to.
     """
-    import matplotlib.pyplot as plt  # ty: ignore[unresolved-import]
+    import matplotlib.pyplot as plt
     import pandas as pd
-    import seaborn as sns  # ty: ignore[unresolved-import]
+    import seaborn as sns
 
-    sns.set_theme(style="whitegrid", font_scale=0.95)
+    sns.set_theme(style="whitegrid", font_scale=0.85)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     gpu_rows = load_results(gpu_dir, "gpu")
