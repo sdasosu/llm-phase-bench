@@ -1,5 +1,8 @@
 # Phase-Wise Analysis of LLM Inference Acceleration on GPU, CPU, and Edge Device
 
+> Published at **[PEARC '26](https://doi.org/10.1145/3785462.3815902)** — Practice and Experience in Advanced Research Computing, July 26–30, 2026, Minneapolis, MN, USA.
+> DOI: [10.1145/3785462.3815902](https://doi.org/10.1145/3785462.3815902) · © 2026 the authors, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
 ## Overview
 
 LLM Phase Bench is a benchmarking framework that decomposes LLM inference into **prefill** and **decode** phases, enabling fine-grained latency analysis across heterogeneous hardware. We evaluate three sub-1B models on GPU (NVIDIA RTX 3060 Ti), CPU (AMD Ryzen 5 2600), and edge (Raspberry Pi 4B) under varying quantization and attention configurations.
@@ -77,3 +80,24 @@ src/llm_phase_bench/
   utils/           Device detection, JSONL I/O
 configs/benchmark/ YAML experiment configurations
 ```
+
+## Citation
+
+If you use this work, please cite our PEARC '26 paper:
+
+```bibtex
+@inproceedings{das2026phasewise,
+  author    = {Das, Subhransu and Cheng, Jiaming and Vallabhajosyula, Swathi and Soni, Brijesh and Ramnath, Rajiv},
+  title     = {Phase-Wise Analysis of {LLM} Inference Acceleration on {GPU}, {CPU}, and Edge Device},
+  booktitle = {Practice and Experience in Advanced Research Computing (PEARC '26)},
+  year      = {2026},
+  location  = {Minneapolis, MN, USA},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/3785462.3815902},
+  doi       = {10.1145/3785462.3815902},
+  isbn      = {979-8-4007-2377-3},
+  series    = {PEARC '26},
+}
+```
+
